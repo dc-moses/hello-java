@@ -1,43 +1,41 @@
-# example workflow for Black Duck scans using the Synopsys Action
-# https://github.com/marketplace/actions/synopsys-action
-name: bd-snps-action
+name: CI-BlackDuck-SCA
 on:
   push:
     branches: [ main, master, develop, stage, release ]
   pull_request:
     branches: [ main, master, develop, stage, release ]
   workflow_dispatch:
+    
 jobs:
-  blackduck:
-    runs-on: ubuntu-latest
+  build:
+    runs-on: [ ubuntu-latest ]
     steps:
-    - name: Checkout Source
-      uses: actions/checkout@v4
-    - name: Setup Java JDK
-      uses: actions/setup-java@v4
-      with:
-        java-version: 17
-        distribution: microsoft
-        cache: maven
-    - name: Maven Build
-      run: mvn -B -DskipTests package
-    - name: Black Duck Scan
-      uses: synopsys-sig/synopsys-action@v1.12.0
-      env:
-        DETECT_PROJECT_NAME: ${{ github.event.repository.name }}-DM
-      with:
-        blackduck_url: ${{ vars.BLACKDUCK_URL }}
-        blackduck_token: ${{ secrets.BLACKDUCK_API_TOKEN }}
-        blackduck_scan_failure_severities: 'BLOCKER'
-        blackduck_fixpr_enabled: true
-        blackduck_prComment_enabled: true
-        blackduck_reports_sarif_create: true
-        blackduck_upload_sarif_report: true
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        # include_diagnostics: true
-#    - name: Save Logs
-#      if: always()
-#      uses: actions/upload-artifact@v4
-#      with:
-#        name: bridge-logs
-#        path: ${{ github.workspace }}/.bridge
+      - name: Checkout Source
+        uses: actions/checkout@v3
+      - name: Black Duck SCA Scan
+        uses: blackduck-inc/black-duck-security-scan@v2.0.0
+        
+        ### Configure DETECT environment variables
+        env:
+          DETECT_PROJECT_NAME: ${{ github.event.repository.name }}
+          
+        with:
+          ### SCANNING: Required fields
+          blackducksca_url: ${{ vars.BLACKDUCK_URL }}
+          blackducksca_token: ${{ secrets.BLACKDUCK_TOKEN }}
+         
+          ### SCANNING: Optional fields
+          blackducksca_scan_failure_severities: 'BLOCKER,CRITICAL'
+          
+          ### FIX PULL REQUEST CREATION: Uncomment below to enable
+          blackducksca_fixpr_enabled: true
+          github_token: ${{ secrets.GITHUB_TOKEN }} # Required when Fix PRs is enabled
+          
+          ### PULL REQUEST COMMENTS: Uncomment below to enable
+          blackducksca_prcomment_enabled: true 
+          # github_token: ${{ secrets.GITHUB_TOKEN }} # Required when PR comments is enabled
+
+          ### SARIF report generation and upload to GitHub Adavanced Security: Uncomment below to enable
+          blackducksca_reports_sarif_create: true # Create Black Duck SCA SARIF report and upload it as artifact
+          blackducksca_upload_sarif_report: true  # Upload Black Duck SCA SARIF report in GitHub Advanced Security tab
+          # github_token: ${{ secrets.GITHUB_TOKEN }} # Required when blackducksca_upload_sarif_report is set as true
