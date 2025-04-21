@@ -1,7 +1,6 @@
 // example Jenkinsfile for Polaris scans using the Bridge CLI
 // https://documentation.blackduck.com/bundle/bridge/page/documentation/c_overview.html
 pipeline {
-    agent { label 'linux64' }
     environment {
         ORG_NAME = "${env.GIT_URL.tokenize('/.')[-3]}"
         REPO_NAME = "${env.GIT_URL.tokenize('/.')[-2]}"
