@@ -16,10 +16,7 @@ pipeline {
         BRIDGE_POLARIS_ASSESSMENT_TYPES = 'SAST,SCA'
         GITHUB_TOKEN = credentials('github-pat')
     }
-    tools {
-        maven 'maven-3.9'
-        jdk 'openjdk-17'
-    }
+
     stages {
         stage('Build') {
             steps {
